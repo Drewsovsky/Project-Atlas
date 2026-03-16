@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+:root {
+  --color-bg: #f3f0e8;
+  --color-surface: #ebe4d7;
+  --color-text: #1e2930;
+  --color-muted: #5b6870;
+  --color-border: #d1c8b7;
+  --color-accent: #c4442d;
+}
+
+@theme inline {
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 25% 15%, #efe6d5 0%, transparent 36%),
+    linear-gradient(180deg, #f9f6ee 0%, var(--color-bg) 70%);
+  color: var(--color-text);
+  font-family: var(--font-body), "Avenir Next", sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-display {
+  font-family: var(--font-display), "Avenir Next", sans-serif;
+}
