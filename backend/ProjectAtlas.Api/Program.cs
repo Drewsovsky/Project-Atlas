@@ -4,8 +4,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped(_ =>
     new Supabase.Client(
-        builder.Configuration["Supabase:Url"],
-        builder.Configuration["Supabase:Key"],
+        builder.Configuration["Supabase:Url"]!,
+        builder.Configuration["Supabase:Key"]!,
         new Supabase.SupabaseOptions
         {
             AutoRefreshToken = true,

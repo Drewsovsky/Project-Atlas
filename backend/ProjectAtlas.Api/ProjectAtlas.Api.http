@@ -16,3 +16,12 @@ Content-Type: application/json
 DELETE http://localhost:5177/profiles/bd7100da-46a3-4db3-bfb5-28c534ad2be9
 Content-Type: application/json
 
+###
+PUT http://localhost:5177/profiles/bd7100da-46a3-4db3-bfb5-28c534ad2be9
+Content-Type: application/json
+
+{
+    "guid": "bd7100da-46a3-4db3-bfb5-28c534ad2be9",
+    "name": "John Doe Updated",
+    "email": "john.doe.updated@example.com"
+}
