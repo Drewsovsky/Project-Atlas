@@ -15,6 +15,7 @@ builder.Services.AddScoped(_ =>
 var app = builder.Build();
 
 app.MapProfilesEndpoints();
+app.MapEventsEndpoints();
 
 app.Run();
 

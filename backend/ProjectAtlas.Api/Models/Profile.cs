@@ -10,8 +10,8 @@ public class Profile : BaseModel
     [Column("guid")]
     public Guid Guid { get; set; }
 
-    [Column("name")]
-    public string Name { get; set; }
+    [Column("title")]
+    public string Title { get; set; }
 
     [Column("email")]
     public string Email { get; set; }
