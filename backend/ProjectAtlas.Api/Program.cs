@@ -1,5 +1,7 @@
 
+using Microsoft.IdentityModel.Tokens;
 using ProjectAtlas.Api.Endpoints;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +24,20 @@ builder.Services.AddSwaggerGen(swagger =>
         Title = "Project Atlas API",
         Description = "TBA"
     });
+});
+
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication().AddJwtBearer(options =>
+{
+    options .Authority = builder.Configuration["Authentication:Authority"];
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["Authentication:ValidIssuer"],
+        ValidateAudience = true,    
+        ValidAudience = builder.Configuration["Authentication:ValidAudience"],
+        ValidateLifetime = true,
+    };
 });
 
 var app = builder.Build();

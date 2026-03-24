@@ -1,5 +1,11 @@
+@HostAddress = http://localhost:5177
+@AccessToken = eyJhbGciOiJFUzI1NiIsImtpZCI6IjEwMDdiN2I5LTY3NWYtNDM5Ni05NmRlLWM3MmM2ZDcwNjMxNiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2FjdXVic3VzbGZidnV6ZnF5dGZtLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJiZDcxMDBkYS00NmEzLTRkYjMtYmZiNS0yOGM1MzRhZDJiZTkiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzc0MzYwMTk5LCJpYXQiOjE3NzQzNTY1OTksImVtYWlsIjoiZHJld3NoYWt1bGFAZ21haWwuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbF92ZXJpZmllZCI6dHJ1ZX0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NzQzNTY1OTl9XSwic2Vzc2lvbl9pZCI6IjhmOGQzMmIxLTlkZTEtNGYyNS1hZDQ4LWUyNWMyZmFjYzFiYiIsImlzX2Fub255bW91cyI6ZmFsc2V9.J0I1AD0hL_uyawum6r-7cg2CUQRhv-Seprt0fLhYencGsk_lkdYVRmRE9sNDiWwMl5jjekEnj6k5_72gfAX0Pw
+@SupabaseAuthUrl = https://acuubsuslfbvuzfqytfm.supabase.co/auth/v1
+@SupabaseApiKey = sb_publishable_j_EkTvkf0bOcV6A3AQgWAg_Znuo_pQm
+
 POST http://localhost:5177/profiles/
 Content-Type: application/json
+Authorization: Bearer {{AccessToken}}
 
 {
     "guid": "bd7100da-46a3-4db3-bfb5-28c534ad2be9",
@@ -7,21 +13,33 @@ Content-Type: application/json
     "email": "john.doe@example.com"
 }
 
+###
+GET {{HostAddress}}/profiles/bd7100da-46a3-4db3-bfb5-28c534ad2be9
+Content-Type: application/json
+Authorization: Bearer {{AccessToken}}
 
 ###
-GET http://localhost:5177/profiles/bd7100da-46a3-4db3-bfb5-28c534ad2be9
+DELETE {{HostAddress}}/profiles/bd7100da-46a3-4db3-bfb5-28c534ad2be9
 Content-Type: application/json
+Authorization: Bearer {{AccessToken}}
 
 ###
-DELETE http://localhost:5177/profiles/bd7100da-46a3-4db3-bfb5-28c534ad2be9
+PUT {{HostAddress}}/profiles/bd7100da-46a3-4db3-bfb5-28c534ad2be9
 Content-Type: application/json
-
-###
-PUT http://localhost:5177/profiles/bd7100da-46a3-4db3-bfb5-28c534ad2be9
-Content-Type: application/json
+Authorization: Bearer {{AccessToken}}
 
 {
     "guid": "bd7100da-46a3-4db3-bfb5-28c534ad2be9",
     "name": "John Doe Updated",
     "email": "john.doe.updated@example.com"
+}
+
+###
+POST {{SupabaseAuthUrl}}/token?grant_type=password
+ApiKey: {{SupabaseApiKey}}
+Content-Type: application/json
+
+{
+    "email": "drewshakula@gmail.com",
+    "password": "123"
 }

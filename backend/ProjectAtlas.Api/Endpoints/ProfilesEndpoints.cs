@@ -48,7 +48,8 @@ public static class ProfilesEndpoints
             );
 
             return Results.CreatedAtRoute(BindName, new { guid = createProfileResponse.Guid }, createProfileResponse);
-        });
+        })
+        .RequireAuthorization();
 
         // GET /{guid}
         group.MapGet("/{guid}", async (Guid guid, DbClient client) =>
@@ -73,7 +74,8 @@ public static class ProfilesEndpoints
 
             return Results.Ok(getProfileResponse);
         })
-        .WithName(BindName);
+        .WithName(BindName)
+        .RequireAuthorization();
 
         // PUT
         group.MapPut("/{guid}", async (Guid guid, UpdateProfileRequest request, DbClient client) =>
@@ -96,7 +98,8 @@ public static class ProfilesEndpoints
                 return Results.NotFound();
             }
             return Results.NoContent();
-        });
+        })
+        .RequireAuthorization();
 
         // DELETE
         group.MapDelete("/{guid}", async (Guid guid, DbClient client) =>
@@ -107,6 +110,7 @@ public static class ProfilesEndpoints
                 .Delete();
 
             return Results.NoContent();
-        });
+        })
+        .RequireAuthorization();
     }
 }
