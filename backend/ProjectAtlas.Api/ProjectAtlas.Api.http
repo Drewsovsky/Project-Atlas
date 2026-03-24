@@ -13,6 +13,11 @@ Authorization: Bearer {{AccessToken}}
 }
 
 ###
+GET {{HostAddress}}/profiles/
+Content-Type: application/json
+Authorization: Bearer {{AccessToken}}
+
+###
 GET {{HostAddress}}/profiles/bd7100da-46a3-4db3-bfb5-28c534ad2be9
 Content-Type: application/json
 Authorization: Bearer {{AccessToken}}

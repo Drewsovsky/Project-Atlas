@@ -59,6 +59,23 @@ public static class ProfilesEndpoints
         })
         .RequireAuthorization();
 
+        // GET /
+        group.MapGet("/", async (DbClient client) =>
+        {
+            var result = await client.From<Profile>().Get();
+            var profiles = result.Models.Select(profile => new GetProfileResponse(
+                profile.Guid,
+                profile.Name,
+                profile.Email,
+                profile.Nickname,
+                profile.PictureUrl,
+                profile.AboutMe,
+                profile.ActivityScore
+            )).ToList();
+
+            return Results.Ok(profiles);
+        });
+
         // GET /{guid}
         group.MapGet("/{guid}", async (Guid guid, DbClient client) =>
         {
