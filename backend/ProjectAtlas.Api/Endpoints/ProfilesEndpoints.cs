@@ -1,4 +1,5 @@
 using System;
+using System.Security.Claims;
 using ProjectAtlas.Api.Contracts.Profiles;
 using ProjectAtlas.Api.Models;
 using DbClient = Supabase.Client;
@@ -14,13 +15,20 @@ public static class ProfilesEndpoints
     {
         var group = app.MapGroup(BaseRoute);
 
-        // TODO: Parse Guid from JSON body instead of query parameter, and validate it
         // POST
-        group.MapPost("/", async (CreateProfileRequest request, DbClient client) =>
+        group.MapPost("/", async (CreateProfileRequest request, DbClient client, HttpContext context) =>
         {
+            var uuid = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                ?? context.User.FindFirst("sub")?.Value;
+
+            if (uuid is null)
+            {
+                return Results.Unauthorized();
+            }
+
             var profile = new Profile
             {
-                Guid = Guid.Parse("bd7100da-46a3-4db3-bfb5-28c534ad2be9"),
+                Guid = Guid.Parse(uuid!),
                 Name = request.Name,
                 Email = request.Email,
                 Nickname = request.Nickname,
@@ -48,7 +56,8 @@ public static class ProfilesEndpoints
             );
 
             return Results.CreatedAtRoute(BindName, new { guid = createProfileResponse.Guid }, createProfileResponse);
-        });
+        })
+        .RequireAuthorization();
 
         // GET /{guid}
         group.MapGet("/{guid}", async (Guid guid, DbClient client) =>
@@ -73,7 +82,8 @@ public static class ProfilesEndpoints
 
             return Results.Ok(getProfileResponse);
         })
-        .WithName(BindName);
+        .WithName(BindName)
+        .RequireAuthorization();
 
         // PUT
         group.MapPut("/{guid}", async (Guid guid, UpdateProfileRequest request, DbClient client) =>
@@ -96,7 +106,8 @@ public static class ProfilesEndpoints
                 return Results.NotFound();
             }
             return Results.NoContent();
-        });
+        })
+        .RequireAuthorization();
 
         // DELETE
         group.MapDelete("/{guid}", async (Guid guid, DbClient client) =>
@@ -107,6 +118,7 @@ public static class ProfilesEndpoints
                 .Delete();
 
             return Results.NoContent();
-        });
+        })
+        .RequireAuthorization();
     }
 }
