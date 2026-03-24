@@ -1,4 +1,5 @@
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using ProjectAtlas.Api.Endpoints;
 using System.Text;
@@ -27,9 +28,9 @@ builder.Services.AddSwaggerGen(swagger =>
 });
 
 builder.Services.AddAuthorization();
-builder.Services.AddAuthentication().AddJwtBearer(options =>
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
-    options .Authority = builder.Configuration["Authentication:Authority"];
+    options.Authority = builder.Configuration["Authentication:Authority"];
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,

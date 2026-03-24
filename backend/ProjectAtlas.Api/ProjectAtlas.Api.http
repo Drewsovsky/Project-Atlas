@@ -1,16 +1,15 @@
 @HostAddress = http://localhost:5177
-@AccessToken = eyJhbGciOiJFUzI1NiIsImtpZCI6IjEwMDdiN2I5LTY3NWYtNDM5Ni05NmRlLWM3MmM2ZDcwNjMxNiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2FjdXVic3VzbGZidnV6ZnF5dGZtLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJiZDcxMDBkYS00NmEzLTRkYjMtYmZiNS0yOGM1MzRhZDJiZTkiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzc0MzYwMTk5LCJpYXQiOjE3NzQzNTY1OTksImVtYWlsIjoiZHJld3NoYWt1bGFAZ21haWwuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbF92ZXJpZmllZCI6dHJ1ZX0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NzQzNTY1OTl9XSwic2Vzc2lvbl9pZCI6IjhmOGQzMmIxLTlkZTEtNGYyNS1hZDQ4LWUyNWMyZmFjYzFiYiIsImlzX2Fub255bW91cyI6ZmFsc2V9.J0I1AD0hL_uyawum6r-7cg2CUQRhv-Seprt0fLhYencGsk_lkdYVRmRE9sNDiWwMl5jjekEnj6k5_72gfAX0Pw
+@AccessToken = eyJhbGciOiJFUzI1NiIsImtpZCI6IjEwMDdiN2I5LTY3NWYtNDM5Ni05NmRlLWM3MmM2ZDcwNjMxNiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2FjdXVic3VzbGZidnV6ZnF5dGZtLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJiZDcxMDBkYS00NmEzLTRkYjMtYmZiNS0yOGM1MzRhZDJiZTkiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzc0MzYyMjYxLCJpYXQiOjE3NzQzNTg2NjEsImVtYWlsIjoiZHJld3NoYWt1bGFAZ21haWwuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbF92ZXJpZmllZCI6dHJ1ZX0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NzQzNTg2NjF9XSwic2Vzc2lvbl9pZCI6IjA1MjlkOTRkLWNiMTctNDBiMS1hMjQ0LTY3ZmI2ZjE0YmY1YyIsImlzX2Fub255bW91cyI6ZmFsc2V9.hQSbdNdZ81xeTYX0G5Bb8kPNhDZgVmirKm1PB0DvUMW__XcjbM5t6N15CACL3fg2-seTz_B7xmjgXdEqYxnihQ
 @SupabaseAuthUrl = https://acuubsuslfbvuzfqytfm.supabase.co/auth/v1
 @SupabaseApiKey = sb_publishable_j_EkTvkf0bOcV6A3AQgWAg_Znuo_pQm
 
-POST http://localhost:5177/profiles/
+POST {{HostAddress}}/profiles/
 Content-Type: application/json
 Authorization: Bearer {{AccessToken}}
 
 {
-    "guid": "bd7100da-46a3-4db3-bfb5-28c534ad2be9",
-    "name": "John Doe",
-    "email": "john.doe@example.com"
+    "name": "Drewmba Hrewmba",
+    "email": "drewshakula@gmail.com"
 }
 
 ###
@@ -29,7 +28,6 @@ Content-Type: application/json
 Authorization: Bearer {{AccessToken}}
 
 {
-    "guid": "bd7100da-46a3-4db3-bfb5-28c534ad2be9",
     "name": "John Doe Updated",
     "email": "john.doe.updated@example.com"
 }
