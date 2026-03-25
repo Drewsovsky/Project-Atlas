@@ -25,6 +25,7 @@ function RegisterPageContent() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [bio, setBio] = useState("");
   const [links, setLinks] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -53,8 +54,23 @@ function RegisterPageContent() {
       return;
     }
 
+    if (!email.trim()) {
+      setError("Email is required.");
+      setSubmitting(false);
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address.");
+      setSubmitting(false);
+      return;
+    }
+
     const registerError = await register(username, password, {
       name,
+      email,
       bio,
       links: links.filter(link => link.trim()),
     });
@@ -134,6 +150,18 @@ function RegisterPageContent() {
                 />
               </label>
             </div>
+
+            <label className="flex flex-col gap-1 text-sm text-[var(--color-muted)]">
+              Email Address *
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                className="min-h-11 rounded-md border border-[var(--color-border)] px-3 text-[var(--color-text)]"
+                autoComplete="email"
+                required
+              />
+            </label>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="flex flex-col gap-1 text-sm text-[var(--color-muted)]">

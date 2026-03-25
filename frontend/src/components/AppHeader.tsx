@@ -6,15 +6,14 @@ import { useAuth } from "@/context/AuthContext";
 import { MobileMenu } from "@/components/MobileMenu";
 
 const navItems = [
-  { href: "/gallery", label: "Gallery" },
-  { href: "/leaderboard", label: "Leaderboard" },
-  { href: "/events", label: "Events" },
-  { href: "/admin", label: "Admin" },
+  { href: "/gallery", label: "Галерея" },
+  { href: "/leaderboard", label: "Таблиця лідерів" },
+  { href: "/events", label: "Івенти" },
 ];
 
 export function AppHeader() {
   const router = useRouter();
-  const { user, logout, isLoading } = useAuth();
+  const { user, logout, isLoading, isAdmin } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -25,11 +24,12 @@ export function AppHeader() {
     <header className="sticky top-0 z-20 border-b border-[var(--color-border)] bg-white/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-8">
         <Link href="/" className="font-display text-xl font-semibold text-[var(--color-text)]">
-          Atlas Miniatures
+          BunePlace
         </Link>
 
         <nav className="hidden items-center gap-2 md:flex lg:gap-4">
           {navItems.map((item) => (
+            
             <Link
               key={item.href}
               href={item.href}
@@ -39,19 +39,28 @@ export function AppHeader() {
             </Link>
           ))}
 
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="rounded-full px-3 py-2 text-sm text-[var(--color-muted)] transition hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
+            >
+              Адмін
+            </Link>
+          )}
+
           {!isLoading && user ? (
             <div className="flex items-center gap-2">
               <Link
                 href="/post/create"
                 className="rounded-full bg-[var(--color-accent)] px-3 py-2 text-sm font-medium text-white"
               >
-                Create Post
+                Публікувати
               </Link>
               <Link
                 href="/profile/me"
                 className="rounded-full border border-[var(--color-border)] px-3 py-2 text-sm text-[var(--color-text)]"
               >
-                My Profile
+                Профіль
               </Link>
               <span className="text-sm text-[var(--color-muted)]">{user.username}</span>
               <button
@@ -59,7 +68,7 @@ export function AppHeader() {
                 onClick={handleLogout}
                 className="rounded-full border border-[var(--color-border)] px-3 py-2 text-sm text-[var(--color-text)]"
               >
-                Sign out
+                Вийти
               </button>
             </div>
           ) : (
@@ -67,7 +76,7 @@ export function AppHeader() {
               href="/auth/login"
               className="rounded-full border border-[var(--color-border)] px-3 py-2 text-sm text-[var(--color-text)]"
             >
-              Sign in
+              Увійти
             </Link>
           )}
         </nav>

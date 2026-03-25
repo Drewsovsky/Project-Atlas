@@ -4,11 +4,20 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:frontend": "next dev",
+    "dev:backend": "cd ../backend/ProjectAtlas.Api && dotnet run",
+    "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "docker:build": "cd .. && docker compose build",
+    "docker:up": "cd .. && docker compose up",
+    "docker:dev": "cd .. && docker compose -f docker-compose.yml -f docker-compose.dev.yml up",
+    "docker:down": "cd .. && docker compose down",
+    "docker:logs": "cd .. && docker compose logs -f"
   },
   "dependencies": {
+    "axios": "^1.7.9",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3"
@@ -18,6 +27,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",

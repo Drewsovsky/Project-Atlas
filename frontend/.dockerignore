@@ -1,0 +1,23 @@
+# Frontend .dockerignore
+Dockerfile
+Dockerfile.dev
+.dockerignore
+.next
+.git
+.gitignore
+README.md
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Local env files
+.env*.local
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts

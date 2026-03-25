@@ -135,6 +135,7 @@ const register = async (
     const newUser = await userService.createUser({
       username: normalizedUsername,
       name: userData.name.trim(),
+      email: userData.email.trim(),
       bio: userData.bio?.trim() || "",
       links: userData.links?.filter(link => link.trim()) || [],
     });
