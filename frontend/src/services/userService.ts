@@ -7,10 +7,18 @@ export type UserProfilePatch = {
   links: string[];
 };
 
+export type NewUserData = {
+  username: string;
+  name: string;
+  bio?: string;
+  links?: string[];
+};
+
 type UserService = {
   getUsers: () => Promise<User[]>;
   getUserById: (id: string) => Promise<User | undefined>;
   getUserByUsername: (username: string) => Promise<User | undefined>;
+  createUser: (userData: NewUserData) => Promise<User>;
   updateUserProfile: (
     id: string,
     patch: UserProfilePatch,
@@ -33,6 +41,27 @@ const getUserByUsername = async (
   username: string,
 ): Promise<User | undefined> => {
   return usersStore.find((user) => user.username === username);
+};
+
+const createUser = async (userData: NewUserData): Promise<User> => {
+  // Generate a unique ID
+  const id = `user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  
+  const newUser: User = {
+    id,
+    name: userData.name,
+    username: userData.username,
+    avatar: "/avatars/default.jpg",
+    bio: userData.bio || "",
+    links: userData.links || [],
+    rating: 0,
+    role: "user",
+    banned: false,
+    createdAt: new Date().toISOString(),
+  };
+
+  usersStore.push(newUser);
+  return newUser;
 };
 
 const updateUserProfile = async (
@@ -111,6 +140,7 @@ export const userService: UserService = {
   getUsers,
   getUserById,
   getUserByUsername,
+  createUser,
   updateUserProfile,
   updateUserRating,
   setUserBanStatus,

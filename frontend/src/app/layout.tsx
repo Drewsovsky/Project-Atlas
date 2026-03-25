@@ -1,17 +1,20 @@
 import type { Metadata } from "next";
-import { DM_Sans, Space_Grotesk } from "next/font/google";
+import { Inter_Tight } from "next/font/google";
 import { AppHeader } from "@/components/AppHeader";
 import { AppProviders } from "@/components/AppProviders";
+import { Footer } from "@/components/Footer";
 import "./globals.css";
 
-const bodyFont = DM_Sans({
+const interTight = Inter_Tight({
   variable: "--font-body",
   subsets: ["latin"],
 });
 
-const displayFont = Space_Grotesk({
+// Using Inter Tight for both body and display for consistency
+const displayFont = Inter_Tight({
   variable: "--font-display",
   subsets: ["latin"],
+  weight: ["600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -26,10 +29,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${bodyFont.variable} ${displayFont.variable} antialiased`}>
+      <body className={`${interTight.variable} ${displayFont.variable} antialiased`}>
         <AppProviders>
           <AppHeader />
           {children}
+          <Footer />
         </AppProviders>
       </body>
     </html>

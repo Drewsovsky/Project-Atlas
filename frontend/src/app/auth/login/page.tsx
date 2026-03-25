@@ -105,6 +105,13 @@ function LoginPageContent() {
             >
               {submitting ? "Signing in..." : "Sign in"}
             </button>
+            
+            <p className="text-center text-sm text-[var(--color-muted)]">
+              Don&apos;t have an account?{" "}
+              <Link href="/auth/register" className="text-[var(--color-accent)] hover:underline">
+                Create one
+              </Link>
+            </p>
           </form>
         )}
       </section>

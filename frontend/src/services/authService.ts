@@ -1,5 +1,6 @@
 import { userService } from "@/services/userService";
 import type { User } from "@/types/user";
+import type { NewUserData } from "@/services/userService";
 
 const SESSION_KEY = "atlas-session-user-id";
 
@@ -9,6 +10,10 @@ const demoCredentials: Record<string, string> = {
 };
 
 export type LoginResult =
+  | { success: true; user: User }
+  | { success: false; error: string };
+
+export type RegisterResult =
   | { success: true; user: User }
   | { success: false; error: string };
 
@@ -78,8 +83,83 @@ const logout = (): void => {
   clearStoredUserId();
 };
 
+const register = async (
+  username: string,
+  password: string,
+  userData: Omit<NewUserData, 'username'>
+): Promise<RegisterResult> => {
+  const normalizedUsername = username.trim().toLowerCase();
+  
+  // Validate username
+  if (!normalizedUsername) {
+    return {
+      success: false,
+      error: "Username is required.",
+    };
+  }
+  
+  if (normalizedUsername.length < 3) {
+    return {
+      success: false,
+      error: "Username must be at least 3 characters long.",
+    };
+  }
+  
+  // Check if username already exists
+  const existingUser = await userService.getUserByUsername(normalizedUsername);
+  if (existingUser) {
+    return {
+      success: false,
+      error: "Username is already taken.",
+    };
+  }
+  
+  // Validate password
+  if (!password || password.length < 6) {
+    return {
+      success: false,
+      error: "Password must be at least 6 characters long.",
+    };
+  }
+  
+  // Validate name
+  if (!userData.name?.trim()) {
+    return {
+      success: false,
+      error: "Name is required.",
+    };
+  }
+  
+  try {
+    // Create the user
+    const newUser = await userService.createUser({
+      username: normalizedUsername,
+      name: userData.name.trim(),
+      bio: userData.bio?.trim() || "",
+      links: userData.links?.filter(link => link.trim()) || [],
+    });
+    
+    // Store credentials for future login
+    demoCredentials[normalizedUsername] = password;
+    
+    // Log the user in automatically
+    setStoredUserId(newUser.id);
+    
+    return {
+      success: true,
+      user: newUser,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: "Failed to create account. Please try again.",
+    };
+  }
+};
+
 export const authService = {
   getSessionUser,
   login,
   logout,
+  register,
 };
