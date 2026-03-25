@@ -27,6 +27,21 @@ builder.Services.AddSwaggerGen(swagger =>
     });
 });
 
+// Configure CORS for frontend integration
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+        policy.WithOrigins(
+                  "http://localhost:3000",
+                  "https://localhost:3000",
+                  "http://localhost:3001",
+                  "http://frontend:3000"   // Docker internal network
+              )
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials());
+});
+
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
@@ -42,6 +57,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 });
 
 var app = builder.Build();
+
+// Enable CORS
+app.UseCors("AllowFrontend");
+
+// Health check endpoint for Docker
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 
 app.MapProfilesEndpoints();
 
