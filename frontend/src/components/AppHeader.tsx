@@ -24,7 +24,7 @@ export function AppHeader() {
     <header className="sticky top-0 z-20 border-b border-[var(--color-border)] bg-white/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-8">
         <Link href="/" className="font-display text-xl font-semibold text-[var(--color-text)]">
-          BunePlace
+          BunePlacess
         </Link>
 
         <nav className="hidden items-center gap-2 md:flex lg:gap-4">

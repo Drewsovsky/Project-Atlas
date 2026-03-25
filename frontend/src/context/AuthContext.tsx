@@ -22,7 +22,7 @@ type AuthContextValue = {
   register: (
     username: string,
     password: string,
-    userData: Omit<NewUserData, 'username'>
+    userData: Omit<NewUserData, 'nickname'>
   ) => Promise<string | null>;
 };
 
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (
       username: string,
       password: string,
-      userData: Omit<NewUserData, 'username'>
+      userData: Omit<NewUserData, 'nickname'>
     ) => {
       const result = await authService.register(username, password, userData);
 

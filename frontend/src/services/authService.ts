@@ -86,7 +86,7 @@ const logout = (): void => {
 const register = async (
   username: string,
   password: string,
-  userData: Omit<NewUserData, 'username'>
+  userData: Omit<NewUserData, 'nickname'>
 ): Promise<RegisterResult> => {
   const normalizedUsername = username.trim().toLowerCase();
   
@@ -133,11 +133,12 @@ const register = async (
   try {
     // Create the user
     const newUser = await userService.createUser({
-      username: normalizedUsername,
+      nickname: normalizedUsername,
       name: userData.name.trim(),
       email: userData.email.trim(),
-      bio: userData.bio?.trim() || "",
-      links: userData.links?.filter(link => link.trim()) || [],
+      pictureUrl: userData.pictureUrl?.trim() || undefined,
+      aboutMe: userData.aboutMe?.trim() || undefined,
+      activityScore: 0,
     });
     
     // Store credentials for future login
@@ -150,7 +151,7 @@ const register = async (
       success: true,
       user: newUser,
     };
-  } catch (error) {
+  } catch {
     return {
       success: false,
       error: "Failed to create account. Please try again.",

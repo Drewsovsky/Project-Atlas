@@ -14,17 +14,26 @@ cp .env.example .env
 ### 2. Build and Run
 ```bash
 # Development mode (with hot reload)
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+# Development mode in background
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
 
 # Production mode
-docker compose up
+docker compose up --build
 
-# Build images
-docker compose build
-
-# Run in background
-docker compose up -d
+# Production mode in background
+docker compose up -d --build
 ```
+
+### 2.1 Development Hot Reload Notes
+```bash
+# Frontend hot reload: http://localhost:3001
+# Backend hot reload (dotnet watch): http://localhost:5177
+# In dev mode both services watch mounted source files.
+```
+
+- On macOS, frontend file watching uses polling (`CHOKIDAR_USEPOLLING=true`, `WATCHPACK_POLLING=1000`) for stable hot reload inside Docker Desktop.
 
 ### 3. Using NPM Scripts (from frontend directory)
 ```bash
@@ -44,6 +53,57 @@ npm run docker:down
 
 # View logs
 npm run docker:logs
+```
+
+### 4. Optional Helper Script (dev + prod in one command)
+Create `scripts/docker-run.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+MODE="${1:-help}"
+
+case "$MODE" in
+     dev)
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+          ;;
+     dev-bg)
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+          ;;
+     prod)
+          docker compose up --build
+          ;;
+     prod-bg)
+          docker compose up -d --build
+          ;;
+     down-dev)
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v
+          ;;
+     down-prod)
+          docker compose down -v
+          ;;
+     logs-dev)
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml logs -f
+          ;;
+     logs-prod)
+          docker compose logs -f
+          ;;
+     *)
+          echo "Usage: $0 {dev|dev-bg|prod|prod-bg|down-dev|down-prod|logs-dev|logs-prod}"
+          exit 1
+          ;;
+esac
+```
+
+Make it executable and run:
+
+```bash
+chmod +x scripts/docker-run.sh
+
+# Examples
+./scripts/docker-run.sh dev
+./scripts/docker-run.sh prod
 ```
 
 ## 📍 Access Points
@@ -86,8 +146,14 @@ lsof -ti:5177 | xargs kill -9
 
 ### Clean Rebuild
 ```bash
-# Remove containers and rebuild
-docker compose down
+# Remove dev containers and rebuild
+docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v
+docker system prune -f
+docker compose -f docker-compose.yml -f docker-compose.dev.yml build --no-cache
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+# Remove prod containers and rebuild
+docker compose down -v
 docker system prune -f
 docker compose build --no-cache
 docker compose up
@@ -101,4 +167,13 @@ docker compose logs -f
 # Specific service
 docker compose logs -f backend
 docker compose logs -f frontend
+```
+
+### Verify Hot Reload
+```bash
+# Frontend: edit any file under frontend/src, then check frontend logs
+docker compose -f docker-compose.yml -f docker-compose.dev.yml logs -f frontend
+
+# Backend: edit any file under backend/ProjectAtlas.Api, then check backend logs
+docker compose -f docker-compose.yml -f docker-compose.dev.yml logs -f backend
 ```

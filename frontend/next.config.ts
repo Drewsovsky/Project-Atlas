@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'standalone', // Required for Docker
+  ...(process.env.NODE_ENV === "production" ? { output: "standalone" as const } : {}),
   images: {
     remotePatterns: [
       {

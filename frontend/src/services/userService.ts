@@ -1,9 +1,8 @@
 import { apiClient, API_ENDPOINTS } from '@/lib/api/client';
 import type { User } from '@/types/user';
-import type { Profile, CreateProfileRequest, UpdateProfileRequest } from '@/types/profile';
+import type { Profile, CreateProfileRequest } from '@/types/profile';
 import { 
-  profileToUser, 
-  userToCreateProfileRequest, 
+  profileToUser,
   userToUpdateProfileRequest 
 } from '@/lib/api/mappers';
 import { users } from '@/lib/dummy-data/users'; // Fallback for missing functionality
@@ -15,11 +14,12 @@ export type UserProfilePatch = {
 };
 
 export type NewUserData = {
-  username: string;
+  nickname: string;
   name: string;
-  email: string; // Required for backend
-  bio?: string;
-  links?: string[];
+  email: string;
+  pictureUrl?: string;
+  aboutMe?: string;
+  activityScore?: number;
 };
 
 type UserService = {
@@ -73,6 +73,7 @@ const getUserById = async (id: string): Promise<User | undefined> => {
     const extras = getStoredUserData(user.id);
     return extras ? { ...user, ...extras } : user;
   } catch (error: any) {
+    
     if (error.response?.status === 404) {
       return undefined;
     }
@@ -98,20 +99,20 @@ const getUserByUsername = async (username: string): Promise<User | undefined> =>
 // Create new user
 const createUser = async (userData: NewUserData): Promise<User> => {
   try {
-    const profileData = userToCreateProfileRequest(userData, userData.email);
+    const profileData: CreateProfileRequest = {
+      name: userData.name,
+      email: userData.email,
+      nickname: userData.nickname,
+      pictureUrl: userData.pictureUrl,
+      aboutMe: userData.aboutMe,
+      activityScore: userData.activityScore ?? 0,
+    };
     const response = await apiClient.post<Profile>(API_ENDPOINTS.profiles.create, profileData);
     
     const user = profileToUser(response.data);
+    storeUserData(user.id, { role: 'user', banned: false });
     
-    // Store frontend-only data locally
-    const extras = {
-      links: userData.links || [],
-      role: 'user' as const,
-      banned: false,
-    };
-    storeUserData(user.id, extras);
-    
-    return { ...user, ...extras };
+    return { ...user, role: 'user', banned: false };
   } catch (error: any) {
     console.error('Failed to create user in backend:', error);
     throw error;
