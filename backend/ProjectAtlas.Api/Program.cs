@@ -58,20 +58,31 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 
 var app = builder.Build();
 
-// Enable CORS
+// Apply CORS early in pipeline - BEFORE routing and auth
 app.UseCors("AllowFrontend");
 
-// Health check endpoint for Docker
+// Only redirect to HTTPS in production
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Health check
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 
+// Your endpoints
 app.MapProfilesEndpoints();
 
+// Swagger
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Project Atlas API V1");
-    c.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
+    c.RoutePrefix = string.Empty;
 });
 
 app.Run();
-

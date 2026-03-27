@@ -26,6 +26,7 @@ type UserService = {
   getUsers: () => Promise<User[]>;
   getUserById: (id: string) => Promise<User | undefined>;
   getUserByUsername: (username: string) => Promise<User | undefined>;
+  getUserByEmail: (email: string) => Promise<User | undefined>;
   createUser: (userData: NewUserData) => Promise<User>;
   updateUserProfile: (
     id: string,
@@ -73,7 +74,6 @@ const getUserById = async (id: string): Promise<User | undefined> => {
     const extras = getStoredUserData(user.id);
     return extras ? { ...user, ...extras } : user;
   } catch (error: any) {
-    
     if (error.response?.status === 404) {
       return undefined;
     }
@@ -93,6 +93,16 @@ const getUserByUsername = async (username: string): Promise<User | undefined> =>
   } catch (error: any) {
     console.warn('Failed to fetch user by username:', error);
     return users.find(user => user.username === username);
+  }
+};
+
+// Get user by email
+const getUserByEmail = async (email: string): Promise<User | undefined> => {
+  try {
+    const allUsers = await getUsers();
+    return allUsers.find(u => u.email === email);
+  } catch {
+    return undefined;
   }
 };
 
@@ -204,6 +214,7 @@ export const userService: UserService = {
   getUsers,
   getUserById,
   getUserByUsername,
+  getUserByEmail,
   createUser,
   updateUserProfile,
   updateUserRating,

@@ -51,23 +51,24 @@ const getSessionUser = async (): Promise<User | null> => {
   return user ?? null;
 };
 
-const login = async (username: string, password: string): Promise<LoginResult> => {
-  const normalizedUsername = username.trim().toLowerCase();
-  const expectedPassword = demoCredentials[normalizedUsername];
+const login = async (email: string, password: string): Promise<LoginResult> => {
+  const normalizedEmail = email.trim().toLowerCase();
 
-  if (!expectedPassword || expectedPassword !== password) {
-    return {
-      success: false,
-      error: "Invalid username or password.",
-    };
-  }
-
-  const user = await userService.getUserByUsername(normalizedUsername);
+  const user = await userService.getUserByEmail(normalizedEmail);
 
   if (!user) {
     return {
       success: false,
-      error: "Demo account is not configured.",
+      error: "No account found with that email address.",
+    };
+  }
+
+  // Verify password from stored credentials (keyed by user id)
+  const expectedPassword = demoCredentials[user.id];
+  if (!expectedPassword || expectedPassword !== password) {
+    return {
+      success: false,
+      error: "Invalid email or password.",
     };
   }
 
@@ -141,8 +142,8 @@ const register = async (
       activityScore: 0,
     });
     
-    // Store credentials for future login
-    demoCredentials[normalizedUsername] = password;
+    // Store credentials keyed by user id for email-based login lookup
+    demoCredentials[newUser.id] = password;
     
     // Log the user in automatically
     setStoredUserId(newUser.id);

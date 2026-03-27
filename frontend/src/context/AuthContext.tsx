@@ -16,7 +16,7 @@ type AuthContextValue = {
   user: User | null;
   isLoading: boolean;
   isAdmin: boolean;
-  login: (username: string, password: string) => Promise<string | null>;
+  login: (email: string, password: string) => Promise<string | null>;
   logout: () => void;
   refreshSessionUser: () => Promise<void>;
   register: (
@@ -46,8 +46,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     void loadSession();
   }, [refreshSessionUser]);
 
-  const login = useCallback(async (username: string, password: string) => {
-    const result = await authService.login(username, password);
+  const login = useCallback(async (email: string, password: string) => {
+    const result = await authService.login(email, password);
 
     if (!result.success) {
       return result.error;
