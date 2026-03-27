@@ -8,6 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { supabase } from "@/lib/supabase/client";
 import { authService } from "@/services/authService";
 import type { User } from "@/types/user";
 import type { NewUserData } from "@/services/userService";
@@ -17,7 +18,7 @@ type AuthContextValue = {
   isLoading: boolean;
   isAdmin: boolean;
   login: (email: string, password: string) => Promise<string | null>;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshSessionUser: () => Promise<void>;
   register: (
     username: string,
@@ -38,12 +39,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // Load initial session
     const loadSession = async () => {
       await refreshSessionUser();
       setIsLoading(false);
     };
 
     void loadSession();
+
+    // Subscribe to Supabase auth state changes (token refresh, sign-out, etc.)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event) => {
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          await refreshSessionUser();
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [refreshSessionUser]);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -57,11 +74,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return null;
   }, []);
 
-  const logout = useCallback(() => {
-    authService.logout();
+  const logout = useCallback(async () => {
+    await authService.logout();
     setUser(null);
   }, []);
-  
+
   const register = useCallback(
     async (
       username: string,

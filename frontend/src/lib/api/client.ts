@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { supabase } from '@/lib/supabase/client';
 
 // Create axios instance with default configuration
 export const apiClient = axios.create({
@@ -9,14 +10,13 @@ export const apiClient = axios.create({
   },
 });
 
-// Add request interceptor to include auth token
+// Add request interceptor to include Supabase JWT token
 apiClient.interceptors.request.use(
-  (config) => {
-    // TODO: Add Supabase JWT token when auth is implemented
-    // const token = getSupabaseToken();
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+  async (config) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      config.headers.Authorization = `Bearer ${session.access_token}`;
+    }
     return config;
   },
   (error) => {
@@ -27,10 +27,9 @@ apiClient.interceptors.request.use(
 // Add response interceptor for error handling
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (error.response?.status === 401) {
-      // TODO: Handle unauthorized - redirect to login
-      console.error('Unauthorized - redirecting to login');
+      await supabase.auth.signOut();
     }
     return Promise.reject(error);
   }
