@@ -7,13 +7,14 @@ export function profileToUser(profile: Profile): User {
     id: profile.guid,
     name: profile.name,
     username: profile.nickname,
+    email: profile.email,
     avatar: profile.pictureUrl || '/avatars/default.jpg',
     bio: profile.aboutMe || '',
-    links: [], // TODO: Store links separately or extend backend model
+    links: [],
     rating: profile.activityScore,
-    role: 'user', // TODO: Implement role system in backend
-    banned: false, // TODO: Implement ban system in backend
-    createdAt: new Date().toISOString(), // TODO: Add createdAt to backend model
+    role: 'user',
+    banned: false,
+    createdAt: new Date().toISOString(),
   };
 }
 

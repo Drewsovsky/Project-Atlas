@@ -1,13 +1,7 @@
+import { supabase } from '@/lib/supabase/client';
 import { userService } from "@/services/userService";
 import type { User } from "@/types/user";
 import type { NewUserData } from "@/services/userService";
-
-const SESSION_KEY = "atlas-session-user-id";
-
-const demoCredentials: Record<string, string> = {
-  user: "user123",
-  admin: "admin123",
-};
 
 export type LoginResult =
   | { success: true; user: User }
@@ -17,70 +11,52 @@ export type RegisterResult =
   | { success: true; user: User }
   | { success: false; error: string };
 
-const getStoredUserId = (): string | null => {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  return window.localStorage.getItem(SESSION_KEY);
-};
-
-const setStoredUserId = (userId: string): void => {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.setItem(SESSION_KEY, userId);
-};
-
-const clearStoredUserId = (): void => {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.removeItem(SESSION_KEY);
-};
-
 const getSessionUser = async (): Promise<User | null> => {
-  const userId = getStoredUserId();
-  if (!userId) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) {
     return null;
   }
 
-  const user = await userService.getUserById(userId);
-  return user ?? null;
+  try {
+    const user = await userService.getUserById(session.user.id);
+    return user ?? null;
+  } catch {
+    return null;
+  }
 };
 
-const login = async (username: string, password: string): Promise<LoginResult> => {
-  const normalizedUsername = username.trim().toLowerCase();
-  const expectedPassword = demoCredentials[normalizedUsername];
+const login = async (email: string, password: string): Promise<LoginResult> => {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email.trim(),
+    password,
+  });
 
-  if (!expectedPassword || expectedPassword !== password) {
+  if (error || !data.session) {
     return {
       success: false,
-      error: "Invalid username or password.",
+      error: error?.message ?? "Sign in failed. Please try again.",
     };
   }
 
-  const user = await userService.getUserByUsername(normalizedUsername);
-
-  if (!user) {
+  try {
+    const user = await userService.getUserById(data.user.id);
+    if (!user) {
+      return {
+        success: false,
+        error: "Account found but user profile could not be retrieved.",
+      };
+    }
+    return { success: true, user };
+  } catch {
     return {
       success: false,
-      error: "Demo account is not configured.",
+      error: "Failed to retrieve user profile. Please try again.",
     };
   }
-
-  setStoredUserId(user.id);
-
-  return {
-    success: true,
-    user,
-  };
 };
 
-const logout = (): void => {
-  clearStoredUserId();
+const logout = async (): Promise<void> => {
+  await supabase.auth.signOut();
 };
 
 const register = async (
@@ -89,49 +65,43 @@ const register = async (
   userData: Omit<NewUserData, 'nickname'>
 ): Promise<RegisterResult> => {
   const normalizedUsername = username.trim().toLowerCase();
-  
-  // Validate username
-  if (!normalizedUsername) {
-    return {
-      success: false,
-      error: "Username is required.",
-    };
-  }
-  
-  if (normalizedUsername.length < 3) {
+
+  if (!normalizedUsername || normalizedUsername.length < 3) {
     return {
       success: false,
       error: "Username must be at least 3 characters long.",
     };
   }
-  
-  // Check if username already exists
-  const existingUser = await userService.getUserByUsername(normalizedUsername);
-  if (existingUser) {
-    return {
-      success: false,
-      error: "Username is already taken.",
-    };
-  }
-  
-  // Validate password
+
   if (!password || password.length < 6) {
     return {
       success: false,
       error: "Password must be at least 6 characters long.",
     };
   }
-  
-  // Validate name
+
   if (!userData.name?.trim()) {
     return {
       success: false,
       error: "Name is required.",
     };
   }
-  
+
+  // Create Supabase auth user
+  const { data, error } = await supabase.auth.signUp({
+    email: userData.email.trim(),
+    password,
+  });
+
+  if (error || !data.user) {
+    return {
+      success: false,
+      error: error?.message ?? "Registration failed. Please try again.",
+    };
+  }
+
   try {
-    // Create the user
+    // Create profile in the .NET backend (JWT is automatically attached via apiClient interceptor)
     const newUser = await userService.createUser({
       nickname: normalizedUsername,
       name: userData.name.trim(),
@@ -140,21 +110,14 @@ const register = async (
       aboutMe: userData.aboutMe?.trim() || undefined,
       activityScore: 0,
     });
-    
-    // Store credentials for future login
-    demoCredentials[normalizedUsername] = password;
-    
-    // Log the user in automatically
-    setStoredUserId(newUser.id);
-    
-    return {
-      success: true,
-      user: newUser,
-    };
+
+    return { success: true, user: newUser };
   } catch {
+    // Roll back Supabase user if profile creation fails
+    await supabase.auth.signOut();
     return {
       success: false,
-      error: "Failed to create account. Please try again.",
+      error: "Failed to create user profile. Please try again.",
     };
   }
 };
