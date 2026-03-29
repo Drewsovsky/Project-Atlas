@@ -16,10 +16,10 @@ public static class ProfilesEndpoints
         var group = app.MapGroup(BaseRoute);
 
         // POST
-        group.MapPost("/", async (CreateProfileRequest request, DbClient client, HttpContext context) =>
+        group.MapPost("/", async (CreateProfileRequest request, DbClient client, HttpContext httpContext) =>
         {
-            var uuid = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
-                ?? context.User.FindFirst("sub")?.Value;
+            var uuid = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? httpContext.User.FindFirst("sub")?.Value;
 
             if (uuid is null)
             {
@@ -36,6 +36,12 @@ public static class ProfilesEndpoints
                 AboutMe = request.AboutMe,
                 ActivityScore = request.ActivityScore
             };
+
+            var token = httpContext.Request.Headers["Authorization"]
+                    .ToString()
+                    .Replace("Bearer ", "");
+
+            client.Postgrest.Options.Headers["Authorization"] = $"Bearer {token}";
 
             var result = await client.From<Profile>().Insert(profile);
 
@@ -103,8 +109,14 @@ public static class ProfilesEndpoints
         .RequireAuthorization();
 
         // PUT
-        group.MapPut("/{guid}", async (Guid guid, UpdateProfileRequest request, DbClient client) =>
+        group.MapPut("/{guid}", async (Guid guid, UpdateProfileRequest request, DbClient client, HttpContext httpContext) =>
         {
+            var token = httpContext.Request.Headers["Authorization"]
+                    .ToString()
+                    .Replace("Bearer ", "");
+
+            client.Postgrest.Options.Headers["Authorization"] = $"Bearer {token}";
+
             var result = await client
                 .From<Profile>()
                 .Where(p => p.Guid == guid)
@@ -117,7 +129,9 @@ public static class ProfilesEndpoints
                 .Update();
 
             var updated = result.Models.FirstOrDefault();
-
+            System.Console.WriteLine("LOG: " + result);
+            System.Console.WriteLine("LOG: " + result.Models);
+            System.Console.WriteLine("LOG: " + updated?.Guid);
             if (updated is null)
             {
                 return Results.NotFound();
@@ -127,8 +141,14 @@ public static class ProfilesEndpoints
         .RequireAuthorization();
 
         // DELETE
-        group.MapDelete("/{guid}", async (Guid guid, DbClient client) =>
+        group.MapDelete("/{guid}", async (Guid guid, DbClient client, HttpContext httpContext) =>
         {
+            var token = httpContext.Request.Headers["Authorization"]
+                    .ToString()
+                    .Replace("Bearer ", "");
+
+            client.Postgrest.Options.Headers["Authorization"] = $"Bearer {token}";
+
             await client
                 .From<Profile>()
                 .Where(p => p.Guid == guid)
