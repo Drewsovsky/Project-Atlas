@@ -36,11 +36,17 @@ function LoginPageContent() {
     setSubmitting(true);
     setError(null);
 
-    const loginError = await login(email, password);
+    const { error: loginError, requiresProfileSetup } = await login(email, password);
+    console.log("Login result:", { loginError, requiresProfileSetup });
 
     if (loginError) {
       setError(loginError);
       setSubmitting(false);
+      return;
+    }
+
+    if (requiresProfileSetup) {
+      router.push('/auth/complete-profile');
       return;
     }
 

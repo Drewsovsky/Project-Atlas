@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase/client';
 
 // Create axios instance with default configuration
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5177',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

@@ -21,15 +21,12 @@ function RegisterPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { register, user, isLoading } = useAuth();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [pictureUrl, setPictureUrl] = useState("");
-  const [aboutMe, setAboutMe] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
 
   const returnTo = useMemo(
     () => getSafeReturnTo(searchParams.get("returnTo")),
@@ -48,36 +45,16 @@ function RegisterPageContent() {
       return;
     }
 
-    if (!name.trim()) {
-      setError("Name is required.");
-      setSubmitting(false);
-      return;
-    }
-
-    if (!email.trim()) {
-      setError("Email is required.");
-      setSubmitting(false);
-      return;
-    }
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address.");
-      setSubmitting(false);
-      return;
-    }
-
-    const registerError = await register(username, password, {
-      name,
-      email,
-      pictureUrl: pictureUrl.trim() || undefined,
-      aboutMe: aboutMe.trim() || undefined,
-    });
+    const { error: registerError, requiresConfirmation } = await register(email, password);
 
     if (registerError) {
       setError(registerError);
       setSubmitting(false);
+      return;
+    }
+
+    if (requiresConfirmation) {
+      setConfirmed(true);
       return;
     }
 
@@ -96,6 +73,14 @@ function RegisterPageContent() {
       <section className="rounded-2xl border border-[var(--color-border)] bg-white p-6 shadow-sm">
         {isLoading ? (
           <p className="text-sm text-[var(--color-muted)]">Loading session...</p>
+        ) : confirmed ? (
+          <div className="space-y-3">
+            <p className="font-medium text-[var(--color-text)]">Check your email</p>
+            <p className="text-sm text-[var(--color-muted)]">
+              We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account, then{" "}
+              <Link href="/auth/login" className="text-[var(--color-accent)] hover:underline">sign in</Link>.
+            </p>
+          </div>
         ) : user ? (
           <div className="space-y-3">
             <p className="text-[var(--color-text)]">
@@ -107,33 +92,6 @@ function RegisterPageContent() {
           </div>
         ) : (
           <form className="space-y-4" onSubmit={onSubmit}>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="flex flex-col gap-1 text-sm text-[var(--color-muted)]">
-                Username *
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(event) => setUsername(event.target.value)}
-                  className="min-h-11 rounded-md border border-[var(--color-border)] px-3 text-[var(--color-text)]"
-                  autoComplete="username"
-                  required
-                  minLength={3}
-                />
-              </label>
-
-              <label className="flex flex-col gap-1 text-sm text-[var(--color-muted)]">
-                Display Name *
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  className="min-h-11 rounded-md border border-[var(--color-border)] px-3 text-[var(--color-text)]"
-                  autoComplete="name"
-                  required
-                />
-              </label>
-            </div>
-
             <label className="flex flex-col gap-1 text-sm text-[var(--color-muted)]">
               Email Address *
               <input
@@ -173,29 +131,6 @@ function RegisterPageContent() {
                 />
               </label>
             </div>
-
-            <label className="flex flex-col gap-1 text-sm text-[var(--color-muted)]">
-              Picture URL
-              <input
-                type="url"
-                value={pictureUrl}
-                onChange={(event) => setPictureUrl(event.target.value)}
-                className="min-h-11 rounded-md border border-[var(--color-border)] px-3 text-[var(--color-text)]"
-                placeholder="https://..."
-                autoComplete="photo"
-              />
-            </label>
-
-            <label className="flex flex-col gap-1 text-sm text-[var(--color-muted)]">
-              About Me
-              <textarea
-                value={aboutMe}
-                onChange={(event) => setAboutMe(event.target.value)}
-                className="min-h-20 rounded-md border border-[var(--color-border)] px-3 py-2 text-[var(--color-text)] resize-none"
-                placeholder="Tell us about yourself and your miniature art..."
-                maxLength={500}
-              />
-            </label>
 
             {error && (
               <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">

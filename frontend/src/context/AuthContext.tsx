@@ -11,20 +11,15 @@ import {
 import { supabase } from "@/lib/supabase/client";
 import { authService } from "@/services/authService";
 import type { User } from "@/types/user";
-import type { NewUserData } from "@/services/userService";
 
 type AuthContextValue = {
   user: User | null;
   isLoading: boolean;
   isAdmin: boolean;
-  login: (email: string, password: string) => Promise<string | null>;
+  login: (email: string, password: string) => Promise<{ error: string | null; requiresProfileSetup: boolean }>;
   logout: () => Promise<void>;
   refreshSessionUser: () => Promise<void>;
-  register: (
-    username: string,
-    password: string,
-    userData: Omit<NewUserData, 'nickname'>
-  ) => Promise<string | null>;
+  register: (email: string, password: string) => Promise<{ error: string | null; requiresConfirmation: boolean }>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -67,11 +62,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const result = await authService.login(email, password);
 
     if (!result.success) {
-      return result.error;
+      return { error: result.error, requiresProfileSetup: false };
+    }
+
+    if ('requiresProfileSetup' in result) {
+      return { error: null, requiresProfileSetup: true };
     }
 
     setUser(result.user);
-    return null;
+    return { error: null, requiresProfileSetup: false };
   }, []);
 
   const logout = useCallback(async () => {
@@ -80,19 +79,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const register = useCallback(
-    async (
-      username: string,
-      password: string,
-      userData: Omit<NewUserData, 'nickname'>
-    ) => {
-      const result = await authService.register(username, password, userData);
+    async (email: string, password: string) => {
+      const result = await authService.register(email, password);
 
       if (!result.success) {
-        return result.error;
+        return { error: result.error, requiresConfirmation: false };
       }
 
-      setUser(result.user);
-      return null;
+      return { error: null, requiresConfirmation: result.requiresConfirmation };
     },
     []
   );
