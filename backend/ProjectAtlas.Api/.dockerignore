@@ -1,0 +1,12 @@
+# Backend .dockerignore
+**/bin
+**/obj
+**/.dockerignore
+**/.env
+**/.git
+**/.gitignore
+**/.vs
+**/.vscode
+**/coverage.xml
+**/docker-compose*
+**/.toolstarget

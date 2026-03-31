@@ -1,0 +1,178 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useMemo, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+
+const getSafeReturnTo = (value: string | null): string => {
+  if (!value) {
+    return "/gallery";
+  }
+
+  if (value.startsWith("/") && !value.startsWith("//")) {
+    return value;
+  }
+
+  return "/gallery";
+};
+
+function RegisterPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { register, user, isLoading } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+
+  const returnTo = useMemo(
+    () => getSafeReturnTo(searchParams.get("returnTo")),
+    [searchParams],
+  );
+
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSubmitting(true);
+    setError(null);
+
+    // Client-side validation
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      setSubmitting(false);
+      return;
+    }
+
+    const { error: registerError, requiresConfirmation } = await register(email, password);
+
+    if (registerError) {
+      setError(registerError);
+      setSubmitting(false);
+      return;
+    }
+
+    if (requiresConfirmation) {
+      setConfirmed(true);
+      return;
+    }
+
+    router.push(returnTo);
+  };
+
+  return (
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10 sm:px-8">
+      <section className="space-y-2">
+        <h1 className="text-4xl font-semibold tracking-tight text-[var(--color-text)]">Create Account</h1>
+        <p className="text-[var(--color-muted)]">
+          Join the miniature artists community to share your work and participate in events.
+        </p>
+      </section>
+
+      <section className="rounded-2xl border border-[var(--color-border)] bg-white p-6 shadow-sm">
+        {isLoading ? (
+          <p className="text-sm text-[var(--color-muted)]">Loading session...</p>
+        ) : confirmed ? (
+          <div className="space-y-3">
+            <p className="font-medium text-[var(--color-text)]">Check your email</p>
+            <p className="text-sm text-[var(--color-muted)]">
+              We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account, then{" "}
+              <Link href="/auth/login" className="text-[var(--color-accent)] hover:underline">sign in</Link>.
+            </p>
+          </div>
+        ) : user ? (
+          <div className="space-y-3">
+            <p className="text-[var(--color-text)]">
+              You are already signed in as <strong>{user.username}</strong>.
+            </p>
+            <Link href={returnTo} className="text-[var(--color-accent)]">
+              Continue
+            </Link>
+          </div>
+        ) : (
+          <form className="space-y-4" onSubmit={onSubmit}>
+            <label className="flex flex-col gap-1 text-sm text-[var(--color-muted)]">
+              Email Address *
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                className="min-h-11 rounded-md border border-[var(--color-border)] px-3 text-[var(--color-text)]"
+                autoComplete="email"
+                required
+              />
+            </label>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="flex flex-col gap-1 text-sm text-[var(--color-muted)]">
+                Password *
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  className="min-h-11 rounded-md border border-[var(--color-border)] px-3 text-[var(--color-text)]"
+                  autoComplete="new-password"
+                  required
+                  minLength={6}
+                />
+              </label>
+
+              <label className="flex flex-col gap-1 text-sm text-[var(--color-muted)]">
+                Confirm Password *
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  className="min-h-11 rounded-md border border-[var(--color-border)] px-3 text-[var(--color-text)]"
+                  autoComplete="new-password"
+                  required
+                  minLength={6}
+                />
+              </label>
+            </div>
+
+            {error && (
+              <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {error}
+              </p>
+            )}
+
+            <div className="flex flex-col gap-3">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="min-h-11 rounded-full bg-[var(--color-accent)] px-5 text-sm font-medium text-white disabled:opacity-60"
+              >
+                {submitting ? "Creating Account..." : "Create Account"}
+              </button>
+              
+              <p className="text-center text-sm text-[var(--color-muted)]">
+                Already have an account?{" "}
+                <Link href="/auth/login" className="text-[var(--color-accent)] hover:underline">
+                  Sign in
+                </Link>
+              </p>
+            </div>
+          </form>
+        )}
+      </section>
+    </main>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10 sm:px-8">
+          <section className="rounded-2xl border border-[var(--color-border)] bg-white p-6 shadow-sm">
+            <p className="text-sm text-[var(--color-muted)]">Loading registration page...</p>
+          </section>
+        </main>
+      }
+    >
+      <RegisterPageContent />
+    </Suspense>
+  );
+}

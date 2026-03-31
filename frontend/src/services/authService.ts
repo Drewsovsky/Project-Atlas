@@ -1,85 +1,89 @@
+import { supabase } from '@/lib/supabase/client';
 import { userService } from "@/services/userService";
 import type { User } from "@/types/user";
 
-const SESSION_KEY = "atlas-session-user-id";
-
-const demoCredentials: Record<string, string> = {
-  user: "user123",
-  admin: "admin123",
-};
-
 export type LoginResult =
   | { success: true; user: User }
+  | { success: true; requiresProfileSetup: true }
   | { success: false; error: string };
 
-const getStoredUserId = (): string | null => {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  return window.localStorage.getItem(SESSION_KEY);
-};
-
-const setStoredUserId = (userId: string): void => {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.setItem(SESSION_KEY, userId);
-};
-
-const clearStoredUserId = (): void => {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.removeItem(SESSION_KEY);
-};
+export type RegisterResult =
+  | { success: true; requiresConfirmation: true }
+  | { success: false; error: string };
 
 const getSessionUser = async (): Promise<User | null> => {
-  const userId = getStoredUserId();
-  if (!userId) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) {
     return null;
   }
 
-  const user = await userService.getUserById(userId);
-  return user ?? null;
+  try {
+    const user = await userService.getUserById(session.user.id);
+    return user ?? null;
+  } catch {
+    return null;
+  }
 };
 
-const login = async (username: string, password: string): Promise<LoginResult> => {
-  const normalizedUsername = username.trim().toLowerCase();
-  const expectedPassword = demoCredentials[normalizedUsername];
+const login = async (email: string, password: string): Promise<LoginResult> => {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email.trim(),
+    password,
+  });
 
-  if (!expectedPassword || expectedPassword !== password) {
+  if (error || !data.session) {
     return {
       success: false,
-      error: "Invalid username or password.",
+      error: error?.message ?? "Sign in failed. Please try again.",
     };
   }
 
-  const user = await userService.getUserByUsername(normalizedUsername);
+  try {
+    const user = await userService.getUserById(data.user.id);
 
-  if (!user) {
+    if (!user) {
+      return { success: true, requiresProfileSetup: true };
+    }
+
+    return { success: true, user };
+  } catch {
     return {
       success: false,
-      error: "Demo account is not configured.",
+      error: "Failed to retrieve user profile. Please try again.",
+    };
+  }
+};
+
+const logout = async (): Promise<void> => {
+  await supabase.auth.signOut();
+};
+
+const register = async (email: string, password: string): Promise<RegisterResult> => {
+  if (!password || password.length < 6) {
+    return {
+      success: false,
+      error: "Password must be at least 6 characters long.",
     };
   }
 
-  setStoredUserId(user.id);
+  const { data, error } = await supabase.auth.signUp({
+    email: email.trim(),
+    password,
+  });
 
-  return {
-    success: true,
-    user,
-  };
-};
+  if (error || !data.user) {
+    return {
+      success: false,
+      error: error?.message ?? "Registration failed. Please try again.",
+    };
+  }
 
-const logout = (): void => {
-  clearStoredUserId();
+  return { success: true, requiresConfirmation: true };
 };
 
 export const authService = {
   getSessionUser,
   login,
   logout,
+  register,
 };

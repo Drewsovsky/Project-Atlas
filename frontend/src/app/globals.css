@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --color-bg: #f3f0e8;
-  --color-surface: #ebe4d7;
-  --color-text: #1e2930;
-  --color-muted: #5b6870;
-  --color-border: #d1c8b7;
-  --color-accent: #c4442d;
+  --color-bg: #E0F2FF;
+  --color-surface: #ffffff;
+  --color-text: #0B2852;
+  --color-muted: #132D10;
+  --color-border: #c1d9f0;
+  --color-accent: #ED842B;
 }
 
 @theme inline {
@@ -19,10 +19,10 @@
 body {
   min-height: 100vh;
   background:
-    radial-gradient(circle at 25% 15%, #efe6d5 0%, transparent 36%),
-    linear-gradient(180deg, #f9f6ee 0%, var(--color-bg) 70%);
+    radial-gradient(circle at 25% 15%, rgba(237, 132, 43, 0.05) 0%, transparent 36%),
+    linear-gradient(180deg, #ffffff 0%, var(--color-bg) 70%);
   color: var(--color-text);
-  font-family: var(--font-body), "Avenir Next", sans-serif;
+  font-family: var(--font-body), "Inter Tight", sans-serif;
 }
 
 h1,
@@ -32,5 +32,5 @@ h4,
 h5,
 h6,
 .font-display {
-  font-family: var(--font-display), "Avenir Next", sans-serif;
+  font-family: var(--font-display), "Inter Tight", sans-serif;
 }

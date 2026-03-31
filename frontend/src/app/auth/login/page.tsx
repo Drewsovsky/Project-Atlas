@@ -21,8 +21,8 @@ function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, user, isLoading } = useAuth();
-  const [username, setUsername] = useState("user");
-  const [password, setPassword] = useState("user123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -36,11 +36,17 @@ function LoginPageContent() {
     setSubmitting(true);
     setError(null);
 
-    const loginError = await login(username, password);
+    const { error: loginError, requiresProfileSetup } = await login(email, password);
+    console.log("Login result:", { loginError, requiresProfileSetup });
 
     if (loginError) {
       setError(loginError);
       setSubmitting(false);
+      return;
+    }
+
+    if (requiresProfileSetup) {
+      router.push('/auth/complete-profile');
       return;
     }
 
@@ -51,9 +57,6 @@ function LoginPageContent() {
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10 sm:px-8">
       <section className="space-y-2">
         <h1 className="text-4xl font-semibold tracking-tight text-[var(--color-text)]">Sign in</h1>
-        <p className="text-[var(--color-muted)]">
-          Demo accounts: <strong>user/user123</strong> and <strong>admin/admin123</strong>
-        </p>
       </section>
 
       <section className="rounded-2xl border border-[var(--color-border)] bg-white p-6 shadow-sm">
@@ -71,13 +74,14 @@ function LoginPageContent() {
         ) : (
           <form className="space-y-4" onSubmit={onSubmit}>
             <label className="flex flex-col gap-1 text-sm text-[var(--color-muted)]">
-              Username
+              Email Address
               <input
-                type="text"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
                 className="min-h-11 rounded-md border border-[var(--color-border)] px-3 text-[var(--color-text)]"
-                autoComplete="username"
+                autoComplete="email"
+                required
               />
             </label>
 
@@ -105,6 +109,13 @@ function LoginPageContent() {
             >
               {submitting ? "Signing in..." : "Sign in"}
             </button>
+            
+            <p className="text-center text-sm text-[var(--color-muted)]">
+              Don&apos;t have an account?{" "}
+              <Link href="/auth/register" className="text-[var(--color-accent)] hover:underline">
+                Create one
+              </Link>
+            </p>
           </form>
         )}
       </section>

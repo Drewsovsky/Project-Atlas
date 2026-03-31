@@ -1,0 +1,48 @@
+services:
+  # Backend API Service
+  backend:
+    build:
+      context: ./backend/ProjectAtlas.Api
+      dockerfile: Dockerfile
+    ports:
+      - "5177:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - ASPNETCORE_URLS=http://+:8080
+      - Supabase__Url=${SUPABASE_URL}
+      - Supabase__Key=${SUPABASE_ANON_KEY}
+      - Authentication__Authority=${AUTH_AUTHORITY}
+      - Authentication__ValidIssuer=${AUTH_VALID_ISSUER}
+      - Authentication__ValidAudience=${AUTH_VALID_AUDIENCE}
+    networks:
+      - atlas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # Frontend Next.js Service  
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - NEXT_PUBLIC_API_BASE_URL=${API_BASE_URL}
+      - NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - atlas-network
+    restart: unless-stopped
+
+networks:
+  atlas-network:
+    driver: bridge

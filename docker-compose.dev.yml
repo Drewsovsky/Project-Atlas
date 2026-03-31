@@ -1,0 +1,40 @@
+services:
+  backend:
+    build:
+      context: ./backend/ProjectAtlas.Api
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5177:8080"
+    volumes:
+      - ./backend/ProjectAtlas.Api:/src
+      - /src/bin
+      - /src/obj
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - Supabase__Url=${SUPABASE_URL}
+      - Supabase__Key=${SUPABASE_ANON_KEY}
+      - Authentication__Authority=${AUTH_AUTHORITY}
+      - Authentication__ValidIssuer=${AUTH_VALID_ISSUER}
+      - Authentication__ValidAudience=${AUTH_VALID_AUDIENCE}
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3000"  # Use different port for dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_BASE_URL=${API_BASE_URL}
+      - NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL} 
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=1000
+    depends_on:
+      backend:
+        condition: service_started
