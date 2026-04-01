@@ -32,6 +32,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
         policy.WithOrigins(
+                  "https://bungalo-platform.vercel.app",
                   "http://localhost:3000",
                   "https://localhost:3000",
                   "http://localhost:3001",
