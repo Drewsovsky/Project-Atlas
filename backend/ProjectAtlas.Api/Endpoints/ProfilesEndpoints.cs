@@ -105,8 +105,8 @@ public static class ProfilesEndpoints
 
             return Results.Ok(getProfileResponse);
         })
-        .WithName(BindName)
-        .RequireAuthorization();
+        .WithName(BindName);
+        //.RequireAuthorization();
 
         // PUT
         group.MapPut("/{guid}", async (Guid guid, UpdateProfileRequest request, DbClient client, HttpContext httpContext) =>
